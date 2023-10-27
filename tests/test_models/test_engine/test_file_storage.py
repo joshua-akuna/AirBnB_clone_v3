@@ -113,3 +113,45 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+
+class TestFileStorageCount(unittest.TestCase):
+    '''Tests the count method on the FileStorage class
+    '''
+    def test_all_objects_count(self):
+        '''Tests that the total value of objects increases by 1
+            when new object of any type is created
+        '''
+        obj_count = models.storage.count()
+        new_user = User()
+        new_user.save()
+        self.assertEqual(models.storage.count(), obj_count + 1)
+
+    def test_state_objects_count(self):
+        '''Tests that the total value of State objects increases
+            by 1 when a new State object is created
+        '''
+        obj_count = models.storage.count(State)
+        new_state = State()
+        new_state.save()
+        self.assertEqual(models.storage.count(State), obj_count + 1)
+
+
+class TestFileStorageGetMethod(unittest.TestCase):
+    '''Tests the get method of FileStorage class
+    '''
+    def test_get_object_without_cls(self):
+        '''Tests that a new User instance can be created, persisted
+            and retrieved
+        '''
+        new_user = User()
+        new_user.save()
+        self.assertEqual(models.storage.get(User, new_user.id), new_user)
+
+    def test_get_object_with_place_cls(self):
+        '''Tests that a new Place instance can be created, persisted and
+            retrieved
+        '''
+        new_place = Place()
+        new_place.save()
+        self.assertEqual(models.storage.get(Place, new_place.id), new_place)

@@ -86,3 +86,53 @@ class TestFileStorage(unittest.TestCase):
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
+
+
+class TestDBStorageCount(unittest.TestCase):
+    '''Tests the number of base object instance in DBStorage
+    '''
+    def test_all_object_count(self):
+        '''Test that the number of total objects persisted to the
+            MySQL database increases by a value of 1 when a new
+            State instance is created
+        '''
+        obj_count = models.storage.count()
+        new_state = State(name="Hawaii")
+        new_state.save()
+        self.assertEqual(models.storage.count(), obj_count + 1)
+
+    def test_all_state_user_count(self):
+        '''Test that the number of State instances persisted by the
+            MySQL database increases by a value of 1 when a new
+            User instance is created
+        '''
+        obj_count = models.storage.count(User)
+        new_user = User(first_name='Jon', last_name='Jones')
+        new_user.save()
+        self.assertEqual(models.storage.get(User, new_user.id), new_user)
+
+
+class TestDBStorageGetMethod(unittest.TestCase):
+    '''Test the get method of the DBStorage class
+    '''
+    @unittest.skipIf(models.storage != 'db', "not testing db storage")
+    def test_get_method_for_user(self):
+        '''Test that a new User instance can be created, persisited
+            and retrieved successfully from the MySQL database
+        '''
+        new_user = User(
+                email="user@gmail.com",
+                password='password',
+                first_name='John',
+                last_name="Doe"
+        )
+        new_user.save()
+        self.assertEqual(models.storage.get(User, new_user.id), new_user)
+
+    @unittest.skipIf(models.storage != 'db', "not testing db storage")
+    def test_get_method_for_state(self):
+        '''Test that a new State instance can be created, persisited
+            and retrieved successfully from the MySQL database
+        '''
+        new_state = State('Florida')
+        new_state.save()
