@@ -10,4 +10,6 @@ from flask import jsonify
 def status():
     '''Returns a JSON object for status {"status": "OK"}
     '''
-    return jsonify({"status": "OK"})
+    return jsonify({
+        'status': 'OK'
+    })
