@@ -78,7 +78,7 @@ def update_user(user_id):
             continue
         setattr(user_to_update, k, v)
 
-    # user_to_update.save()
-    # updated_user = storage.get(User, user_id)
-    # return jsonify(updated_user.to_dict()), 200
-    return jsonify(user_to_update.to_dict()), 200
+    user_to_update.save()
+    updated_user = storage.get(User, user_id)
+    return jsonify(updated_user.to_dict()), 200
+    # return jsonify(user_to_update.to_dict()), 200
