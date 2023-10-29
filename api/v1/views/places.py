@@ -78,8 +78,8 @@ def places_search():
 
         for amenity_id in amenity_ids:
             amenity = storage.get(Amenity, amenity_id)
-            if not amenity:
-                continue
+            # if not amenity:
+            #    continue
             amenities.append(amenity)
         filtered_places = [place for place in all_places
                            if all([am in place.amenities for am in amenities])]
