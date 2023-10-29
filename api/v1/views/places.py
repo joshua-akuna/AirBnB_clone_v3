@@ -31,7 +31,7 @@ def places_search():
     '''The endpoint retrieves all Place instances depending on the
         content of the JSON in the request body
     '''
-    if not request.is_json:
+    if not request.is_json or  request.get_json() is None:
         abort(400, 'Not a JSON')
 
     payload = request.get_json()
