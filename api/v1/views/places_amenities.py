@@ -72,26 +72,12 @@ def add_amenity_to_place(place_id, amenity_id):
         abort(404)
 
     if storage_t == 'db':
-        linked_amenity = None
-        for amenity in place.amenities:
-            if amenity.id == amenity_id:
-                linked_amenity = amenity
-
-        linked_place = None
-        for place in amenity.place_amenities:
-            if place.id == place_id:
-                linked_place = place
-
-        if linked_amenity and linked_place:
-            res = amenity.to_dict()
-            del res['place_amenities']
-            return jsonify(res), 200
+        if amenity in place.amenities:
+            return jsonify(amenity.to_dict()), 200
 
         place.amenities.append(amenity)
         place.save()
-        res = amenity.to_dict()
-        del res['place_amenities']
-        return jsonify(res), 201
+        return jsonify(amenity.to_dict()), 201
     else:
         if amenity_id in place.amenity_ids:
             return jsonify(amenity.to_dict()), 200
