@@ -8,6 +8,7 @@ from models import storage
 from models.city import City
 from models.place import Place
 from models.user import User
+from models.amenity import Amenity
 
 
 @app_views.route('/cities/<city_id>/places', methods=['GET'],
@@ -66,15 +67,18 @@ def places_search():
             all_places.extend(places_by_city_id)
 
     if 'amenities' in payload and len(payload.get('amenities')) > 0:
-        places_with_amenities = []
-        amenity_ids = payload.get('amenities')
-        for place in all_places:
-            amenities_ids = [amenity.id for amenity in place.amenities]
-            if set(amenity_ids).issubset(amenities_ids):
-                filtered_place = place.to_dict()
-                del filtered_place['amenities']
-                places_with_amenities.append(filtered_place)
-        return jsonify(places_with_amenities)
+        amenity_ids = payload.get('amenities', None)
+        amenities = [storage.get(Amenity, amenity_id)
+                     for amenity_id in amenity_ids]
+        filtered_places = [place for place in all_places
+                           if all([am in place.amenities for am in amenities])]
+
+        place_list = []
+        for place in filtered_places:
+            dic = place.to_dict()
+            dic.pop('amenities', None)
+            place_list.append(dic)
+        return jsonify(place_list)
     else:
         filtered_places = [place.to_dict() for place in all_places]
         return jsonify(filtered_places)
