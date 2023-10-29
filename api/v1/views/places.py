@@ -31,14 +31,14 @@ def places_search():
     '''The endpoint retrieves all Place instances depending on the
         content of the JSON in the request body
     '''
-    if not request.is_json or  request.get_json() is None:
+    if not request.is_json or request.get_json() is None:
         abort(400, 'Not a JSON')
 
     payload = request.get_json()
 
     payload_values = []
     for key in payload:
-       payload_values.extend(payload.get(key))
+        payload_values.extend(payload.get(key))
 
     all_places = []
     if len(payload) == 0 or len(payload_values) == 0:
@@ -59,8 +59,8 @@ def places_search():
         if 'cities' in payload and len(payload.get('cities')) > 0:
             for city_id in payload.get('cities'):
                 city = storage.get(City, city_id)
-                if city == None:
-                    continue;
+                if city is None:
+                    continue
                 if city_id not in all_cities_ids:
                     all_cities_ids.append(city_id)
 
