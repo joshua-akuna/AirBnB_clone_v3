@@ -45,14 +45,8 @@ def get_delete_amenity_by_id(place_id, amenity_id):
     if linked_amenity is None:
         abort(404)
 
-    amenity_place_link = None
     if storage_t == 'db':
-        for place in amenity.place_amenities:
-            if place.id == place_id:
-                amenity_place_link = place
-                break
-
-        if amenity_place_link is None:
+        if amenity not in place.amenities:
             abort(404)
 
         place.amenities.remove(amenity)
