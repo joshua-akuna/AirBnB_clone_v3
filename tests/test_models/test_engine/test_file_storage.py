@@ -123,16 +123,17 @@ class TestFileStorageCount(unittest.TestCase):
             when new object of any type is created
         '''
         obj_count = models.storage.count()
-        new_user = User()
+        new_user = User(email='campbell@gmail.com', password='campbell')
         new_user.save()
         self.assertEqual(models.storage.count(), obj_count + 1)
 
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_state_objects_count(self):
         '''Tests that the total value of State objects increases
             by 1 when a new State object is created
         '''
         obj_count = models.storage.count(State)
-        new_state = State()
+        new_state = State(name="Alaska")
         new_state.save()
         self.assertEqual(models.storage.count(State), obj_count + 1)
 
@@ -140,6 +141,7 @@ class TestFileStorageCount(unittest.TestCase):
 class TestFileStorageGetMethod(unittest.TestCase):
     '''Tests the get method of FileStorage class
     '''
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_get_object_without_cls(self):
         '''Tests that a new User instance can be created, persisted
             and retrieved
@@ -148,6 +150,7 @@ class TestFileStorageGetMethod(unittest.TestCase):
         new_user.save()
         self.assertEqual(models.storage.get(User, new_user.id), new_user)
 
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_get_object_with_place_cls(self):
         '''Tests that a new Place instance can be created, persisted and
             retrieved

@@ -101,13 +101,14 @@ class TestDBStorageCount(unittest.TestCase):
         new_state.save()
         self.assertEqual(models.storage.count(), obj_count + 1)
 
-    def test_all_state_user_count(self):
+    def test_all__user_count(self):
         '''Test that the number of State instances persisted by the
             MySQL database increases by a value of 1 when a new
             User instance is created
         '''
         obj_count = models.storage.count(User)
-        new_user = User(first_name='Jon', last_name='Jones')
+        new_user = User(first_name='Jon', last_name='Jones',
+                        email='jonjones@email.com', password='jonjones')
         new_user.save()
         self.assertEqual(models.storage.get(User, new_user.id), new_user)
 
