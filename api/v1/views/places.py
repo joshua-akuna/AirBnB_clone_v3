@@ -6,6 +6,7 @@ from flask import jsonify, abort, request
 from api.v1.views import app_views
 from models import storage
 from models.city import City
+from models.state import State
 from models.place import Place
 from models.user import User
 from models.amenity import Amenity
@@ -48,23 +49,28 @@ def places_search():
         # get all city ids for all specifies states
         if 'states' in payload and len(payload.get('states')) > 0:
             for state_id in payload.get('states'):
-                city_ids_with_state_id = [city.id
-                                          for city in storage.all(City).values()
-                                          if city.state_id == state_id]
-                all_cities_ids.extend(city_ids_with_state_id)
+                state = storage.get(State, state_id)
+                if not state:
+                    continue
+                all_cities_ids.extend([city.id for city in state.cities])
 
         # add all city ids not already in the list of city ids
         # for all specified cities
         if 'cities' in payload and len(payload.get('cities')) > 0:
             for city_id in payload.get('cities'):
+                city = storage.get(City, city_id)
+                if city == None:
+                    continue;
                 if city_id not in all_cities_ids:
                     all_cities_ids.append(city_id)
 
         # get all places for all city ids
         for city_id in all_cities_ids:
-            places_by_city_id = [place for place in storage.all(Place).values()
-                                 if place.city_id == city_id]
-            all_places.extend(places_by_city_id)
+            city = storage.get(City, city_id)
+            if not city:
+                continue
+            places_by_city = [place for place in city.places]
+            all_places.extend(places_by_city)
 
     if 'amenities' in payload and len(payload.get('amenities')) > 0:
         amenity_ids = payload.get('amenities', None)
