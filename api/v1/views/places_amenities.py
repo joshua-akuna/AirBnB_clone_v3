@@ -37,23 +37,13 @@ def get_delete_amenity_by_id(place_id, amenity_id):
     if amenity is None:
         abort(404)
 
-    linked_amenity = None
-    for amenity in place.amenities:
-        if amenity_id == amenity.id:
-            linked_amenity = amenity
+    if amenity_id == amenity.id:
+        linked_amenity = amenity
 
-    if linked_amenity is None:
+    if amenity not in place.amenities:
         abort(404)
 
-    if storage_t == 'db':
-        if amenity not in place.amenities:
-            abort(404)
-
-        place.amenities.remove(amenity)
-    else:
-        amenity_idx = place.amenity_ids.index(amenity_id)
-        place.amenity_ids.pop(amenity_idx)
-
+    place.amenities.remove(amenity)
     place.save()
     return jsonify({}), 200
 
