@@ -47,7 +47,7 @@ def places_search():
         print(len(all_places))
         return jsonify(all_places)
 
-    places_ids_list = []
+    places = []
     if ps_ids:
         states = [storage.get(State, s_id) for s_id in ps_ids
                   if storage.get(State, s_id)]
@@ -58,38 +58,29 @@ def places_search():
                 for place in city.places:
                     if not place:
                         continue
-                    places_ids_list.append(place.id)
-
-    all_places = [storage.get(Place, p_id)
-                  for p_id in set(places_ids_list) if p_id]
+                    places.append(place)
 
     if pc_ids:
         cities = [storage.get(City, c_id) for c_id in pc_ids
                   if storage.get(City, c_id)]
         for city in cities:
             for place in city.places:
-                if place and place.id not in places_ids_list:
-                    places_ids_list.append(place.id)
-
-    all_places = [storage.get(Place, p_id)
-                  for p_id in set(places_ids_list) if p_id]
+                if place and place not in places:
+                    places.append(place)
 
     if pa_ids:
-        if not places_ids_list:
-            places_ids_list = [place.id for place in storage
-                               .all(Place).values()if place]
+        if not places:
+            places = [place for place in storage.all(Place).values() if place]
 
-        places = [storage.get(Place, p_id)
-                  for p_id in set(places_ids_list) if p_id]
         amenities = [storage.get(Amenity, amenity_id)
                      for amenity_id in pa_ids
                      if storage.get(Amenity, amenity_id)]
-        all_places = [place for place in places
-                      if all([amenity in place.amenities
-                              for amenity in amenities])]
+        places = [place for place in places
+                  if all([amenity in place.amenities
+                          for amenity in amenities])]
 
     filtered = []
-    for place in all_places:
+    for place in places:
         res = place.to_dict()
         del res['amenities']
         filtered.append(res)
