@@ -44,7 +44,8 @@ def places_search():
     all_places = []
     if not payload or not len(payload) or (
         not p_states and
-        not p_cities):
+        not p_cities
+    ):
         all_places = [place for place in storage.all(Place).values()]
     else:
         all_cities_ids = []
