@@ -36,12 +36,15 @@ def places_search():
 
     payload = request.get_json()
 
-    payload_values = []
-    for key in payload:
-        payload_values.extend(payload.get(key))
+    if payload and len(payload):
+        p_states = payload.get("states", None)
+        p_cities = payload.get("cities", None)
+        p_amenities = payload.get("amenities", None)
 
     all_places = []
-    if len(payload) == 0 or len(payload_values) == 0:
+    if not payload or not len(payload) or (
+        not p_states and
+        not p_cities):
         all_places = [place for place in storage.all(Place).values()]
     else:
         all_cities_ids = []
@@ -89,9 +92,11 @@ def places_search():
             dic = place.to_dict()
             dic.pop('amenities', None)
             place_list.append(dic)
+        print(len(place_list))
         return jsonify(place_list)
     else:
-        filtered_places = [place.to_dict() for place in all_places]
+        filtered_places = [place.to_dict() for place in set(all_places)]
+        print(len(filtered_places))
         return jsonify(filtered_places)
 
 
