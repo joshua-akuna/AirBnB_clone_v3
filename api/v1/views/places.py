@@ -44,37 +44,35 @@ def places_search():
     if not payload or not len(payload) or (
             not ps_ids and not pc_ids and not pa_ids):
         all_places = [place.to_dict() for place in storage.all(Place).values()]
-        print(len(all_places))
         return jsonify(all_places)
 
     places = []
     if ps_ids:
-        states = [storage.get(State, s_id) for s_id in ps_ids
-                  if storage.get(State, s_id)]
+        states = [storage.get(State, s_id) for s_id in ps_ids]
         for state in states:
+            if not state:
+                continue
             for city in state.cities:
                 if not city:
                     continue
                 for place in city.places:
-                    if not place:
-                        continue
                     places.append(place)
 
     if pc_ids:
-        cities = [storage.get(City, c_id) for c_id in pc_ids
-                  if storage.get(City, c_id)]
+        cities = [storage.get(City, c_id) for c_id in pc_ids]
         for city in cities:
+            if not city:
+                continue
             for place in city.places:
                 if place and place not in places:
                     places.append(place)
 
     if pa_ids:
         if not places:
-            places = [place for place in storage.all(Place).values() if place]
+            places = storage.all(Place).values()
 
         amenities = [storage.get(Amenity, amenity_id)
-                     for amenity_id in pa_ids
-                     if storage.get(Amenity, amenity_id)]
+                     for amenity_id in pa_ids]
         places = [place for place in places
                   if all([amenity in place.amenities
                           for amenity in amenities])]
@@ -85,7 +83,6 @@ def places_search():
         del res['amenities']
         filtered.append(res)
 
-    print(len(filtered))
     return jsonify(filtered)
 
 
