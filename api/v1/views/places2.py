@@ -31,68 +31,59 @@ def places_search():
     '''The endpoint retrieves all Place instances depending on the
         content of the JSON in the request body
     '''
-    if not request.is_json or request.get_json() is None:
+    if not request.is_json:
         abort(400, 'Not a JSON')
 
     payload = request.get_json()
 
-    payload_values = []
-    for key in payload:
-        payload_values.extend(payload.get(key))
+    if payload and len(payload) > 0:
+        ps_ids = payload.get('states', None)
+        pc_ids = payload.get('cities', None)
+        pa_ids = payload.get('amenities', None)
 
-    all_places = []
-    if len(payload) == 0 or len(payload_values) == 0:
-        all_places = [place for place in storage.all(Place).values()]
-    else:
-        all_cities_ids = []
+    if not payload or not len(payload) or (
+            not ps_ids and not pc_ids and not pa_ids):
+        all_places = [place.to_dict() for place in storage.all(Place).values()]
+        return jsonify(all_places)
 
-        # get all city ids for all specifies states
-        if 'states' in payload and len(payload.get('states')) > 0:
-            for state_id in payload.get('states'):
-                state = storage.get(State, state_id)
-                if not state:
+    places = []
+    if ps_ids:
+        states = [storage.get(State, s_id) for s_id in ps_ids]
+        for state in states:
+            if not state:
+                continue
+            for city in state.cities:
+                if not city:
                     continue
-                all_cities_ids.extend([city.id for city in state.cities])
+                for place in city.places:
+                    places.append(place)
 
-        # add all city ids not already in the list of city ids
-        # for all specified cities
-        if 'cities' in payload and len(payload.get('cities')) > 0:
-            for city_id in payload.get('cities'):
-                city = storage.get(City, city_id)
-                if city is None:
-                    continue
-                if city_id not in all_cities_ids:
-                    all_cities_ids.append(city_id)
-
-        # get all places for all city ids
-        for city_id in all_cities_ids:
-            city = storage.get(City, city_id)
+    if pc_ids:
+        cities = [storage.get(City, c_id) for c_id in pc_ids]
+        for city in cities:
             if not city:
                 continue
-            places_by_city = [place for place in city.places]
-            all_places.extend(places_by_city)
+            for place in city.places:
+                if place and place not in places:
+                    places.append(place)
 
-    if 'amenities' in payload and len(payload.get('amenities')) > 0:
-        amenity_ids = payload.get('amenities', None)
-        amenities = []
+    if pa_ids:
+        if not places:
+            places = storage.all(Place).values()
 
-        for amenity_id in amenity_ids:
-            amenity = storage.get(Amenity, amenity_id)
-            # if not amenity:
-            #    continue
-            amenities.append(amenity)
-        filtered_places = [place for place in all_places
-                           if all([am in place.amenities for am in amenities])]
+        amenities = [storage.get(Amenity, amenity_id)
+                     for amenity_id in pa_ids]
+        places = [place for place in places
+                  if all([amenity in place.amenities
+                          for amenity in amenities])]
 
-        place_list = []
-        for place in filtered_places:
-            dic = place.to_dict()
-            dic.pop('amenities', None)
-            place_list.append(dic)
-        return jsonify(place_list)
-    else:
-        filtered_places = [place.to_dict() for place in all_places]
-        return jsonify(filtered_places)
+    filtered = []
+    for place in places:
+        res = place.to_dict()
+        del res['amenities']
+        filtered.append(res)
+
+    return jsonify(filtered)
 
 
 @app_views.route('/places/<place_id>', methods=['GET'], strict_slashes=False)
